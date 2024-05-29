@@ -1,0 +1,57 @@
+# !/command/with-contenv bash
+
+# FILENAME=./rootfs/proxysql.conf
+# COUNT=($(grep -o "ENV\.[A-Z_]*" $FILENAME ))
+# COUNT=($(grep -o "ENV\.[A-Z_]*" /proxysql.conf ))
+# cp /proxysql.conf /proxysql.conf.tpl
+# NEWFILENAME=/proxysql.conf.tpl
+# touch /proxysql.conf.tpl
+# for ENV in  ${COUNT[@]}; do
+# # echo $ENV;
+# key=$(echo $ENV | sed  "s/ENV.//g")
+# val=$(echo ${!key})
+# sed -i "s/$ENV/$val/g" "$NEWFILENAME"
+# done
+
+
+template_mysql_servers='{
+		address=,
+		port=,
+		hostgroup=10,
+		max_connections=100,
+	}'
+mysql_servers(){
+    echo $template_mysql_servers
+}
+key=(mysql_servers mysql_users mysql_galera_hostgroups mysql_replication_hostgroups mysql_query_rules)
+# for n in ${key[@]}; do
+# done
+
+mysql_servers
+
+
+
+
+
+
+# key=(baseUrl appDomain authUrl formBuilderPath appId imageBasePath profilePath cdssBaseUrl videoConsultUrl agora nursing iconPath iconType customer hatiAi mcuNonmcu)
+
+# #------- function for removing slash
+# function sed_for_slash() {
+#     a=$1
+#     output=$(echo $a | sed 's/\//\\\//g')
+#     echo $output
+# }
+
+# # ------ for checking env name with value
+
+# keyname=()
+# value=()
+# for element in ${key[@]}; do
+#     name=$(echo $element | tr '[:lower:]' '[:upper:]')
+#     if [ -n "${!name}" ]; then
+#         val=$(echo ${!name})
+#         keyname+=($element)
+#         value+=($val)
+#     fi
+# done

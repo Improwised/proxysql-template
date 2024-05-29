@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+if [ -n "$CONFILEFILE" ]; then
+proxysql -f --idle-threads -D /var/lib/proxysql -c $CONFILEFILE
+fi
+proxysql -f --idle-threads -D /var/lib/proxysql

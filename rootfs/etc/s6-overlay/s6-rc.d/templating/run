@@ -1,0 +1,226 @@
+#!/command/with-contenv bash
+
+# FILENAME=./rootfs/proxysql.conf
+# COUNT=($(grep -o "ENV\.[A-Z_]*" $FILENAME ))
+# COUNT=($(grep -o "ENV\.[A-Z_]*" /proxysql.conf ))
+# cp /proxysql.conf /proxysql.conf.tpl
+# NEWFILENAME=/proxysql.conf.tpl
+# touch /proxysql.conf.tpl
+# for ENV in  ${COUNT[@]}; do
+# # echo $ENV;
+# key=$(echo $ENV | sed  "s/ENV.//g")
+# val=$(echo ${!key})
+# sed -i "s/$ENV/$val/g" "$NEWFILENAME"
+# done
+
+### ADMIN related thing
+env_name=(ADMIN_USERNAME ADMIN_PASSWORD)
+if [ -n "$ADMIN_USERNAME" ] && [ -n "$ADMIN_PASSWORD" ]; then
+sed -i "s/cluster_username=/cluster_username=\"$ADMIN_USERNAME\"/g" /proxysql.conf
+sed -i "s/cluster_password=/cluster_password=\"$ADMIN_PASSWORD\"/g" /proxysql.conf
+sed -i "s/admin_credentials=/admin_credentials=\"$ADMIN_USERNAME:$ADMIN_PASSWORD\"/g" /proxysql.conf
+sed -i "s/stats_credentials=/stats_credentials=\"$ADMIN_USERNAME:$ADMIN_PASSWORD\"/g" /proxysql.conf
+else 
+sed -i "s/cluster_username=/cluster_username=\"admin\"/g" /proxysql.conf
+sed -i "s/cluster_password=/cluster_password=\"admin\"/g" /proxysql.conf
+sed -i "s/admin_credentials=/admin_credentials=\"admin:admin\"/g" /proxysql.conf
+sed -i "s/stats_credentials=/stats_credentials=\"admin:admin\"/g" /proxysql.conf
+fi
+
+if [ -n "$SERVER_VERSION" ]; then
+sed -i "s/server_version=/server_version=\"$SERVER_VERSION\"/g" /proxysql.conf
+fi
+
+if [ -n "$ADMINPORT" ]; then
+sed -i "s/ADMINPORT/$ADMINPORT/g" /proxysql.conf
+else
+sed -i "s/ADMINPORT/6032/g" /proxysql.conf
+fi
+if [ -n "$DBPORT" ]; then
+sed -i "s/DBPORT/$DBPORT/g" /proxysql.conf
+else
+sed -i "s/DBPORT/3306/g" /proxysql.conf
+## remainging proxysql_server 
+fi
+
+if [ -n "$MONITOR_USERNAME" ] && [ -n "$MONITOR_PASSWORD" ]; then
+sed -i "s/monitor_username=/monitor_username=\"$MONITOR_USERNAME\"/g" /proxysql.conf
+sed -i "s/monitor_password=/monitor_password=\"$MONITOR_PASSWORD\"/g" /proxysql.conf
+else
+sed -i "s/monitor_username=/monitor_username=\"monitor\"/g" /proxysql.conf
+sed -i "s/monitor_password=/monitor_password=\"monitor\"/g" /proxysql.conf
+fi
+
+
+# if [ -n "$PROXYSQL_SERVER" ]; then
+# PROXYSQL_SERVERS_TEMPLATE="proxysql_servers:
+# (
+#   { hostname:"PROXYSQL_SERVER", port:$ADMINPORT, weight:0, comment:"Discovery" },
+# )
+# "
+# cat $PROXYSQL_SERVERS_TEMPLATE >> /proxysql.conf
+# fi
+
+if [ -n "$MYSQL_SERVERS" ]; then
+MYSQL_SERVERS_TEMPLATE="mysql_servers:
+(
+MYSQL_SERVERS_TEMPLATE_BLOCK
+)
+"
+MYSQL_SERVERS_TEMPLATE_BLOCK="{ address: "localhost" , port: 1111 ,	hostgroup:589 , max_connections: 300, weight: 1, status: \"ONLINE\", compression: 0},"
+MYSQL_SERVERS_BLOCK=""
+key_values=()
+values=()
+OIFS=$IFS
+IFS=','
+key_values+=($MYSQL_SERVERS)
+for x in ${key_values[@]};
+do
+IFS=';'
+values+=($x)
+done
+IFS=$OIFS
+count=$(expr $(echo ${#values[@]}) / $(echo ${#key_values[@]}) )
+for ((i = 0 ; i < ${#values[@]} ; i+=$count )); do 
+block=$MYSQL_SERVERS_TEMPLATE_BLOCK
+echo $count
+if [ $count == 2 ]; then
+block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
+block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
+elif [ $count == 3 ]; then
+block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
+block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
+block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
+elif [ $count == 4 ]; then
+block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
+block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
+block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
+block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i+3]}/g")
+elif [ $count == 5 ]; then
+block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
+block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
+block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
+block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i+3]}/g")
+block=$(echo $block | sed "s/weight:[^,]*/weight:${values[i+4]}/g")
+elif [ $count == 6 ]; then
+block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
+block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
+block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
+block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i+3]}/g")
+block=$(echo $block | sed "s/weight:[^,]*/weight:${values[i+4]}/g")
+block=$(echo $block | sed "s/status:[^,]*/status:\"${values[i+5]}\"/g")
+elif [ $count == 7 ]; then
+block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
+block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
+block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
+block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i+3]}/g")
+block=$(echo $block | sed "s/weight:[^,]*/weight:${values[i+4]}/g")
+block=$(echo $block | sed "s/status:[^,]*/status:\"${values[i+5]}\"/g")
+block=$(echo $block | sed "s/compression:[^}]*/compression:${values[i+6]}/g")
+fi
+MYSQL_SERVERS_BLOCK+=$block
+MYSQL_SERVERS_BLOCK+=$(echo "\n")
+done
+
+MYSQL_SERVERS_TEMPLATE=$(echo $MYSQL_SERVERS_TEMPLATE | sed "s/MYSQL_SERVERS_TEMPLATE_BLOCK/$MYSQL_SERVERS_BLOCK /g")
+echo $MYSQL_SERVERS_TEMPLATE >> /proxysql.conf
+fi
+
+# MYSQL_SERVERS="DEMO;8989;1;1;1;1;1,DEMO1;8988;1;1;1;1;1"
+
+if [ -n "$MYSQL_QUERY_RULES" ]; then
+MYSQL_QUERY_RULES_TEMPLATE="mysql_query_rules:
+(
+MYSQL_QUERY_RULES_TEMPLATE_BLOCK
+)
+"
+MYSQL_QUERY_RULES_TEMPLATE_BLOCK="{ rule_id:1, match_pattern:\"^SELECT .* FOR UPDATE$\", destination_hostgroup:0, apply:1, active:1 },"
+MYSQL_QUERY_RULES_BLOCK=""
+key_values=()
+values=()
+OIFS=$IFS
+IFS=','
+key_values+=($MYSQL_QUERY_RULES)
+for x in ${key_values[@]};
+do
+IFS=';'
+values+=($x)
+done
+IFS=$OIFS
+# echo ${#values[@]} ${#key_values[@]}
+count=$(expr $(echo ${#values[@]}) / $(echo ${#key_values[@]}) )
+# echo $count
+j=1
+for ((i = 0 ; i < ${#values[@]} ; i+=$count )); do 
+block=$MYSQL_QUERY_RULES_TEMPLATE_BLOCK
+echo $count
+# echo ${values[i]} ${values[i+1]} ${values[i+2]}
+if [ $count == 2 ]; then
+block=$(echo $block | sed "s/rule_id:[^,]*/rule_id:$j/g")
+block=$(echo $block | sed "s/match_pattern:[^,]*/match_pattern:\"${values[i]}\"/g")
+block=$(echo $block | sed "s/destination_hostgroup:[^,]*/destination_hostgroup:${values[i+1]}/g")
+elif [ $count == 3 ]; then
+block=$(echo $block | sed "s/rule_id:[^,]*/rule_id:$j/g")
+block=$(echo $block | sed "s/match_pattern:[^,]*/match_pattern:\"${values[i]}\"/g")
+block=$(echo $block | sed "s/destination_hostgroup:[^,]*/destination_hostgroup:${values[i+1]}/g")
+block=$(echo $block | sed "s/apply:[^,]*/apply:${values[i+2]}/g")
+elif [ $count == 4 ]; then
+block=$(echo $block | sed "s/rule_id:[^,]*/rule_id:$j/g")
+block=$(echo $block | sed "s/match_pattern:[^,]*/match_pattern:\"${values[i]}\"/g")
+block=$(echo $block | sed "s/destination_hostgroup:[^,]*/destination_hostgroup:${values[i+1]}/g")
+block=$(echo $block | sed "s/apply:[^,]*/apply:${values[i+2]}/g")
+block=$(echo $block | sed "s/active:[^}]*/active:${values[i+3]}/g")
+fi
+MYSQL_QUERY_RULES_BLOCK+=$block"\n"
+j=$(expr $j + 1)
+done
+
+MYSQL_QUERY_RULES_TEMPLATE=$(echo $MYSQL_QUERY_RULES_TEMPLATE | sed "s/MYSQL_QUERY_RULES_TEMPLATE_BLOCK/$MYSQL_QUERY_RULES_BLOCK /g")
+echo $MYSQL_QUERY_RULES_TEMPLATE >> /proxysql.conf
+fi
+
+# if [ -n "$MYSQL_QUERY_RULES" ]; then
+# echo $MYSQL_SERVERS_TEMPLATE
+# fi
+
+
+# IN="bla@some.com;john@home.com"
+
+# OIFS=$IFS
+# IFS=';'
+# mails2=$IN
+# for x in $mails2
+# do
+#     echo "> [$x]"
+# done
+
+# IFS=$OIFS
+
+############################################################
+# PROXYSQL_SERVERS_TEMPLATE="proxysql_servers:
+# (
+#   PROXYSQL_SERVERS_TEMPLATE_MAIN
+# )
+# "
+
+# PROXYSQL_SERVERS_TEMPLATE1="{ hostname:"", port:ADMINPORT, weight:0, comment:"Discovery" }, "
+
+
+# PROXYSQL_SERVERS="DEMO;8989,DEMO1;8988,DEMO2;8987"
+# # PROXYSQL_SERVERS="DEMO;8989"
+# if [ -n "$PROXYSQL_SERVERS" ]; then
+# key_values=()
+# values=()
+# OIFS=$IFS
+# IFS=','
+# key_values+=($PROXYSQL_SERVERS)
+# for x in ${key_values[@]};
+# do
+# IFS=';'
+# values+=($x)
+# done
+# IFS=$OIFS
+# COUNT_PROXYSQL_SERVERS=$(echo ${#key_values[@]})
+
+# echo $COUNT_PROXYSQL_SERVERS $COUNT_PROXYSQL_SERVERS_VALUES
+# fi
