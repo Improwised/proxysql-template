@@ -85,37 +85,44 @@ for x in ${key_values[@]};
 do
 IFS=';'
 values+=($x)
-done
-IFS=$OIFS
-count=$(expr $(echo ${#values[@]}) / $(echo ${#key_values[@]}) )
-for ((i = 0 ; i < ${#values[@]} ; i+=$count )); do 
+for ((i = 0 ; i < ${#values[@]} ; i++ )); do 
+if [ ${#values[@]} == 2 ]; then
 block=$MYSQL_SERVERS_TEMPLATE_BLOCK
-if [ $count == 2 ]; then
 block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
 block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
-elif [ $count == 3 ]; then
+MYSQL_SERVERS_BLOCK+=$block"\n"
+elif [ ${#values[@]} == 3 ]; then
+block=$MYSQL_SERVERS_TEMPLATE_BLOCK
 block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
 block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
 block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
-elif [ $count == 4 ]; then
+MYSQL_SERVERS_BLOCK+=$block"\n"
+elif [ ${#values[@]} == 4 ]; then
+block=$MYSQL_SERVERS_TEMPLATE_BLOCK
 block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
 block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
 block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
 block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i+3]}/g")
-elif [ $count == 5 ]; then
+MYSQL_SERVERS_BLOCK+=$block"\n"
+elif [ ${#values[@]} == 5 ]; then
+block=$MYSQL_SERVERS_TEMPLATE_BLOCK
 block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
 block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
 block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
 block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i+3]}/g")
 block=$(echo $block | sed "s/weight:[^,]*/weight:${values[i+4]}/g")
-elif [ $count == 6 ]; then
+MYSQL_SERVERS_BLOCK+=$block"\n"
+elif [ ${#values[@]} == 6 ]; then
+block=$MYSQL_SERVERS_TEMPLATE_BLOCK
 block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
 block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
 block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
 block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i+3]}/g")
 block=$(echo $block | sed "s/weight:[^,]*/weight:${values[i+4]}/g")
 block=$(echo $block | sed "s/status:[^,]*/status:\"${values[i+5]}\"/g")
-elif [ $count == 7 ]; then
+MYSQL_SERVERS_BLOCK+=$block"\n"
+elif [ ${#values[@]} == 7 ]; then
+block=$MYSQL_SERVERS_TEMPLATE_BLOCK
 block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
 block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
 block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
@@ -123,9 +130,12 @@ block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i+3]
 block=$(echo $block | sed "s/weight:[^,]*/weight:${values[i+4]}/g")
 block=$(echo $block | sed "s/status:[^,]*/status:\"${values[i+5]}\"/g")
 block=$(echo $block | sed "s/compression:[^}]*/compression:${values[i+6]}/g")
+MYSQL_SERVERS_BLOCK+=$block"\n"
 fi
-MYSQL_SERVERS_BLOCK+=$block
-MYSQL_SERVERS_BLOCK+=$(echo "\n")
+values=()
+done
+IFS=$OIFS
+
 done
 
 MYSQL_SERVERS_TEMPLATE=$(echo $MYSQL_SERVERS_TEMPLATE | sed "s/MYSQL_SERVERS_TEMPLATE_BLOCK/$MYSQL_SERVERS_BLOCK /g")
@@ -138,47 +148,99 @@ MYSQL_QUERY_RULES_TEMPLATE="mysql_query_rules:
 MYSQL_QUERY_RULES_TEMPLATE_BLOCK
 )
 "
-MYSQL_QUERY_RULES_TEMPLATE_BLOCK="{ rule_id:1, match_pattern:\"^SELECT .* FOR UPDATE$\", destination_hostgroup:0, apply:1, active:1 },"
+MYSQL_QUERY_RULES_TEMPLATE_BLOCK="{ rule_id:1, match_pattern:\" \", destination_hostgroup:0, apply:1, active:1 },"
 MYSQL_QUERY_RULES_BLOCK=""
 key_values=()
 values=()
 OIFS=$IFS
 IFS=','
 key_values+=($MYSQL_QUERY_RULES)
+j=1
 for x in ${key_values[@]};
 do
 IFS=';'
 values+=($x)
-done
-IFS=$OIFS
 
-count=$(expr $(echo ${#values[@]}) / $(echo ${#key_values[@]}) )
-
-j=1
-for ((i = 0 ; i < ${#values[@]} ; i+=$count )); do 
+for ((i = 0 ; i < ${#values[@]} ; i++ )); do 
+if [ ${#values[@]} == 2 ]; then
 block=$MYSQL_QUERY_RULES_TEMPLATE_BLOCK
-
-if [ $count == 2 ]; then
 block=$(echo $block | sed "s/rule_id:[^,]*/rule_id:$j/g")
 block=$(echo $block | sed "s/match_pattern:[^,]*/match_pattern:\"${values[i]}\"/g")
 block=$(echo $block | sed "s/destination_hostgroup:[^,]*/destination_hostgroup:${values[i+1]}/g")
-elif [ $count == 3 ]; then
+MYSQL_QUERY_RULES_BLOCK+=$block"\n"
+elif [ ${#values[@]} == 3 ]; then
+block=$MYSQL_QUERY_RULES_TEMPLATE_BLOCK
 block=$(echo $block | sed "s/rule_id:[^,]*/rule_id:$j/g")
 block=$(echo $block | sed "s/match_pattern:[^,]*/match_pattern:\"${values[i]}\"/g")
 block=$(echo $block | sed "s/destination_hostgroup:[^,]*/destination_hostgroup:${values[i+1]}/g")
 block=$(echo $block | sed "s/apply:[^,]*/apply:${values[i+2]}/g")
-elif [ $count == 4 ]; then
+MYSQL_QUERY_RULES_BLOCK+=$block"\n"
+elif [ ${#values[@]} == 4 ]; then
+block=$MYSQL_QUERY_RULES_TEMPLATE_BLOCK
 block=$(echo $block | sed "s/rule_id:[^,]*/rule_id:$j/g")
 block=$(echo $block | sed "s/match_pattern:[^,]*/match_pattern:\"${values[i]}\"/g")
 block=$(echo $block | sed "s/destination_hostgroup:[^,]*/destination_hostgroup:${values[i+1]}/g")
 block=$(echo $block | sed "s/apply:[^,]*/apply:${values[i+2]}/g")
 block=$(echo $block | sed "s/active:[^}]*/active:${values[i+3]}/g")
-fi
 MYSQL_QUERY_RULES_BLOCK+=$block"\n"
+fi
+echo $j
 j=$(expr $j + 1)
+echo $j
+values=()
 done
-
+done
+IFS=$OIFS
 MYSQL_QUERY_RULES_TEMPLATE=$(echo $MYSQL_QUERY_RULES_TEMPLATE | sed "s/MYSQL_QUERY_RULES_TEMPLATE_BLOCK/$MYSQL_QUERY_RULES_BLOCK /g")
 echo $MYSQL_QUERY_RULES_TEMPLATE >> /etc/proxysql.cnf
 fi
 
+
+if [ -n "$MYSQL_USERS" ]; then
+MYSQL_USERS_TEMPLATE="mysql_users:
+(
+MYSQL_USERS_TEMPLATE_BLOCK
+)
+"
+MYSQL_USERS_TEMPLATE_BLOCK="{ username:\"root\", password:\"\", default_hostgroup:1, active:1 },"
+MYSQL_USERS_BLOCK=""
+key_values=()
+values=()
+OIFS=$IFS
+IFS=','
+key_values+=($MYSQL_USERS)
+for x in ${key_values[@]};
+do
+IFS=';'
+values+=($x)
+for ((i = 0 ; i < ${#values[@]} ; i++ )); do 
+if [ ${#values[@]} == 1 ]; then
+block=$MYSQL_USERS_TEMPLATE_BLOCK
+block=$(echo $block | sed "s/username:[^,]*/username:\"${values[i]}\"/g")
+MYSQL_USERS_BLOCK+=$block"\n"
+elif [ ${#values[@]} == 2 ]; then
+block=$MYSQL_USERS_TEMPLATE_BLOCK
+block=$(echo $block | sed "s/username:[^,]*/username:\"${values[i]}\"/g")
+block=$(echo $block | sed "s/password:[^,]*/password:\"${values[i+1]}\"/g")
+MYSQL_USERS_BLOCK+=$block"\n"
+elif [ ${#values[@]} == 3 ]; then
+block=$MYSQL_USERS_TEMPLATE_BLOCK
+block=$(echo $block | sed "s/username:[^,]*/username:\"${values[i]}\"/g")
+block=$(echo $block | sed "s/password:[^,]*/password:\"${values[i+1]}\"/g")
+block=$(echo $block | sed "s/default_hostgroup:[^,]*/default_hostgroup:${values[i+2]}/g")
+MYSQL_USERS_BLOCK+=$block"\n"
+elif [ ${#values[@]} == 4 ]; then
+block=$MYSQL_USERS_TEMPLATE_BLOCK
+block=$(echo $block | sed "s/username:[^,]*/username:\"${values[i]}\"/g")
+block=$(echo $block | sed "s/password:[^,]*/password:\"${values[i+1]}\"/g")
+block=$(echo $block | sed "s/default_hostgroup:[^,]*/default_hostgroup:${values[i+2]}/g")
+block=$(echo $block | sed "s/active:[^}]*/active:${values[i+3]}/g")
+MYSQL_USERS_BLOCK+=$block"\n"
+fi
+values=()
+done
+done
+IFS=$OIFS
+MYSQL_USERS_TEMPLATE=$(echo $MYSQL_USERS_TEMPLATE | sed "s/MYSQL_USERS_TEMPLATE_BLOCK/$MYSQL_USERS_BLOCK /g")
+echo $MYSQL_USERS_TEMPLATE >> /etc/proxysql.cnf
+fi
