@@ -1,342 +1,348 @@
 #!/command/with-contenv bash
 
-
 if [ -n "$ADMIN_USERNAME" ] && [ -n "$ADMIN_PASSWORD" ]; then
-sed -i "s/cluster_username=/cluster_username=\"$ADMIN_USERNAME\"/g" /etc/proxysql.cnf
-sed -i "s/cluster_password=/cluster_password=\"$ADMIN_PASSWORD\"/g" /etc/proxysql.cnf
-sed -i "s/admin_credentials=/admin_credentials=\"$ADMIN_USERNAME:$ADMIN_PASSWORD\"/g" /etc/proxysql.cnf
-sed -i "s/stats_credentials=/stats_credentials=\"$ADMIN_USERNAME:$ADMIN_PASSWORD\"/g" /etc/proxysql.cnf
-else 
-sed -i "s/cluster_username=/cluster_username=\"admin\"/g" /etc/proxysql.cnf
-sed -i "s/cluster_password=/cluster_password=\"admin\"/g" /etc/proxysql.cnf
-sed -i "s/admin_credentials=/admin_credentials=\"admin:admin\"/g" /etc/proxysql.cnf
-sed -i "s/stats_credentials=/stats_credentials=\"admin:admin\"/g" /etc/proxysql.cnf
+  sed -i "s/cluster_username=/cluster_username=\"$ADMIN_USERNAME\"/g" /etc/proxysql.cnf
+  sed -i "s/cluster_password=/cluster_password=\"$ADMIN_PASSWORD\"/g" /etc/proxysql.cnf
+  sed -i "s/admin_credentials=/admin_credentials=\"$ADMIN_USERNAME:$ADMIN_PASSWORD\"/g" /etc/proxysql.cnf
+  sed -i "s/stats_credentials=/stats_credentials=\"$ADMIN_USERNAME:$ADMIN_PASSWORD\"/g" /etc/proxysql.cnf
+else
+  sed -i "s/cluster_username=/cluster_username=\"admin\"/g" /etc/proxysql.cnf
+  sed -i "s/cluster_password=/cluster_password=\"admin\"/g" /etc/proxysql.cnf
+  sed -i "s/admin_credentials=/admin_credentials=\"admin:admin\"/g" /etc/proxysql.cnf
+  sed -i "s/stats_credentials=/stats_credentials=\"admin:admin\"/g" /etc/proxysql.cnf
 fi
 
-if [ -n "$WEBPORT" ] ; then
-sed -i "s/WEBPORT/$WEBPORT/g" /etc/proxysql.cnf
+if [ -n "$WEBPORT" ]; then
+  sed -i "s/WEBPORT/$WEBPORT/g" /etc/proxysql.cnf
 else
-sed -i "s/WEBPORT/6080/g" /etc/proxysql.cnf
+  sed -i "s/WEBPORT/6080/g" /etc/proxysql.cnf
 fi
 
 if [ -n "$SERVER_VERSION" ]; then
-sed -i "s/server_version=/server_version=\"$SERVER_VERSION\"/g" /etc/proxysql.cnf
+  sed -i "s/server_version=/server_version=\"$SERVER_VERSION\"/g" /etc/proxysql.cnf
 else
-sed -i "s/server_version=/server_version=\"5.0.7\"/g" /etc/proxysql.cnf
+  sed -i "s/server_version=/server_version=\"5.0.7\"/g" /etc/proxysql.cnf
 fi
 
 if [ -n "$ADMINPORT" ]; then
-sed -i "s/ADMINPORT/$ADMINPORT/g" /etc/proxysql.cnf
+  sed -i "s/ADMINPORT/$ADMINPORT/g" /etc/proxysql.cnf
 else
-sed -i "s/ADMINPORT/6032/g" /etc/proxysql.cnf
+  sed -i "s/ADMINPORT/6032/g" /etc/proxysql.cnf
 fi
 if [ -n "$DBPORT" ]; then
-sed -i "s/DBPORT/$DBPORT/g" /etc/proxysql.cnf
+  sed -i "s/DBPORT/$DBPORT/g" /etc/proxysql.cnf
 else
-sed -i "s/DBPORT/3306/g" /etc/proxysql.cnf
+  sed -i "s/DBPORT/3306/g" /etc/proxysql.cnf
 
 fi
 
 if [ -n "$MONITOR_USERNAME" ] && [ -n "$MONITOR_PASSWORD" ]; then
-sed -i "s/monitor_username=/monitor_username=\"$MONITOR_USERNAME\"/g" /etc/proxysql.cnf
-sed -i "s/monitor_password=/monitor_password=\"$MONITOR_PASSWORD\"/g" /etc/proxysql.cnf
+  sed -i "s/monitor_username=/monitor_username=\"$MONITOR_USERNAME\"/g" /etc/proxysql.cnf
+  sed -i "s/monitor_password=/monitor_password=\"$MONITOR_PASSWORD\"/g" /etc/proxysql.cnf
 else
-sed -i "s/monitor_username=/monitor_username=\"monitor\"/g" /etc/proxysql.cnf
-sed -i "s/monitor_password=/monitor_password=\"monitor\"/g" /etc/proxysql.cnf
+  sed -i "s/monitor_username=/monitor_username=\"monitor\"/g" /etc/proxysql.cnf
+  sed -i "s/monitor_password=/monitor_password=\"monitor\"/g" /etc/proxysql.cnf
 fi
 
 if [ -n "$ADMINPORT" ]; then
-PROXYSQL_SERVERS_TEMPLATE='proxysql_servers:
+  PROXYSQL_SERVERS_TEMPLATE='proxysql_servers:
 (
   { hostname:"PROXYSQL_SERVER", port:ADMINPORT, weight:0, comment:"Discovery" },
 )
 '
 else
-PROXYSQL_SERVERS_TEMPLATE='proxysql_servers:
+  PROXYSQL_SERVERS_TEMPLATE='proxysql_servers:
 (
   { hostname:"PROXYSQL_SERVER", port:6032, weight:0, comment:"Discovery" },
 )
 '
 fi
 if [ -n "$PROXYSQL_SERVER" ]; then
-PROXYSQL_SERVERS_TEMPLATE=$(echo $PROXYSQL_SERVERS_TEMPLATE | sed "s/PROXYSQL_SERVER/$PROXYSQL_SERVER/g")
-PROXYSQL_SERVERS_TEMPLATE=$(echo $PROXYSQL_SERVERS_TEMPLATE | sed "s/ADMINPORT/$ADMINPORT/g")
-echo $PROXYSQL_SERVERS_TEMPLATE >> /etc/proxysql.cnf
+  PROXYSQL_SERVERS_TEMPLATE=$(echo $PROXYSQL_SERVERS_TEMPLATE | sed "s/PROXYSQL_SERVER/$PROXYSQL_SERVER/g")
+  PROXYSQL_SERVERS_TEMPLATE=$(echo $PROXYSQL_SERVERS_TEMPLATE | sed "s/ADMINPORT/$ADMINPORT/g")
+  echo $PROXYSQL_SERVERS_TEMPLATE >>/etc/proxysql.cnf
 else
-PROXYSQL_SERVERS_TEMPLATE=$(echo $PROXYSQL_SERVERS_TEMPLATE | sed "s/PROXYSQL_SERVER/0.0.0.0/g")
-PROXYSQL_SERVERS_TEMPLATE=$(echo $PROXYSQL_SERVERS_TEMPLATE | sed "s/ADMINPORT/$ADMINPORT/g")
-echo $PROXYSQL_SERVERS_TEMPLATE >> /etc/proxysql.cnf
+  PROXYSQL_SERVERS_TEMPLATE=$(echo $PROXYSQL_SERVERS_TEMPLATE | sed "s/PROXYSQL_SERVER/0.0.0.0/g")
+  PROXYSQL_SERVERS_TEMPLATE=$(echo $PROXYSQL_SERVERS_TEMPLATE | sed "s/ADMINPORT/$ADMINPORT/g")
+  echo $PROXYSQL_SERVERS_TEMPLATE >>/etc/proxysql.cnf
 fi
 
 if [ -n "$MYSQL_SERVERS" ]; then
-MYSQL_SERVERS_TEMPLATE="mysql_servers:
+  MYSQL_SERVERS_TEMPLATE="mysql_servers:
 (
 MYSQL_SERVERS_TEMPLATE_BLOCK
 )
 "
-MYSQL_SERVERS_TEMPLATE_BLOCK="{ address: "localhost" , port: 1111 ,	hostgroup:589 , max_connections: 300, weight: 1, status: \"ONLINE\", compression: 0},"
-MYSQL_SERVERS_BLOCK=""
-key_values=()
-values=()
-OIFS=$IFS
-IFS=','
-key_values+=($MYSQL_SERVERS)
-for x in ${key_values[@]};
-do
-IFS=';'
-values+=($x)
-for ((i = 0 ; i < ${#values[@]} ; i++ )); do 
-if [ ${#values[@]} == 2 ]; then
-block=$MYSQL_SERVERS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
-MYSQL_SERVERS_BLOCK+=$block"\n"
-elif [ ${#values[@]} == 3 ]; then
-block=$MYSQL_SERVERS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
-block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
-MYSQL_SERVERS_BLOCK+=$block"\n"
-elif [ ${#values[@]} == 4 ]; then
-block=$MYSQL_SERVERS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
-block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
-block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i+3]}/g")
-MYSQL_SERVERS_BLOCK+=$block"\n"
-elif [ ${#values[@]} == 5 ]; then
-block=$MYSQL_SERVERS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
-block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
-block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i+3]}/g")
-block=$(echo $block | sed "s/weight:[^,]*/weight:${values[i+4]}/g")
-MYSQL_SERVERS_BLOCK+=$block"\n"
-elif [ ${#values[@]} == 6 ]; then
-block=$MYSQL_SERVERS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
-block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
-block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i+3]}/g")
-block=$(echo $block | sed "s/weight:[^,]*/weight:${values[i+4]}/g")
-block=$(echo $block | sed "s/status:[^,]*/status:\"${values[i+5]}\"/g")
-MYSQL_SERVERS_BLOCK+=$block"\n"
-elif [ ${#values[@]} == 7 ]; then
-block=$MYSQL_SERVERS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/port:[^,]*/port:${values[i+1]}/g")
-block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i+2]}/g")
-block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i+3]}/g")
-block=$(echo $block | sed "s/weight:[^,]*/weight:${values[i+4]}/g")
-block=$(echo $block | sed "s/status:[^,]*/status:\"${values[i+5]}\"/g")
-block=$(echo $block | sed "s/compression:[^}]*/compression:${values[i+6]}/g")
-MYSQL_SERVERS_BLOCK+=$block"\n"
-fi
-values=()
-done
-IFS=$OIFS
+  MYSQL_SERVERS_TEMPLATE_BLOCK="{ address: "localhost" , port: 1111 ,	hostgroup:589 , max_connections: 300, weight: 1, status: \"ONLINE\", compression: 0},"
+  MYSQL_SERVERS_BLOCK=""
+  key_values=()
+  values=()
+  OIFS=$IFS
+  IFS=','
+  key_values+=($MYSQL_SERVERS)
+  for x in ${key_values[@]}; do
+    IFS=';'
+    values+=($x)
+    for ((i = 0; i < ${#values[@]}; i++)); do
+      if [ ${#values[@]} == 2 ]; then
+        block=$MYSQL_SERVERS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/port:[^,]*/port:${values[i + 1]}/g")
+        MYSQL_SERVERS_BLOCK+=$block"\n"
+      elif [ ${#values[@]} == 3 ]; then
+        block=$MYSQL_SERVERS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/port:[^,]*/port:${values[i + 1]}/g")
+        block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i + 2]}/g")
+        MYSQL_SERVERS_BLOCK+=$block"\n"
+      elif [ ${#values[@]} == 4 ]; then
+        block=$MYSQL_SERVERS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/port:[^,]*/port:${values[i + 1]}/g")
+        block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i + 2]}/g")
+        block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i + 3]}/g")
+        MYSQL_SERVERS_BLOCK+=$block"\n"
+      elif [ ${#values[@]} == 5 ]; then
+        block=$MYSQL_SERVERS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/port:[^,]*/port:${values[i + 1]}/g")
+        block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i + 2]}/g")
+        block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i + 3]}/g")
+        block=$(echo $block | sed "s/weight:[^,]*/weight:${values[i + 4]}/g")
+        MYSQL_SERVERS_BLOCK+=$block"\n"
+      elif [ ${#values[@]} == 6 ]; then
+        block=$MYSQL_SERVERS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/port:[^,]*/port:${values[i + 1]}/g")
+        block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i + 2]}/g")
+        block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i + 3]}/g")
+        block=$(echo $block | sed "s/weight:[^,]*/weight:${values[i + 4]}/g")
+        block=$(echo $block | sed "s/status:[^,]*/status:\"${values[i + 5]}\"/g")
+        MYSQL_SERVERS_BLOCK+=$block"\n"
+      elif [ ${#values[@]} == 7 ]; then
+        block=$MYSQL_SERVERS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/address:[^,]*/address:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/port:[^,]*/port:${values[i + 1]}/g")
+        block=$(echo $block | sed "s/hostgroup:[^,]*/hostgroup:${values[i + 2]}/g")
+        block=$(echo $block | sed "s/max_connections:[^,]*/max_connections:${values[i + 3]}/g")
+        block=$(echo $block | sed "s/weight:[^,]*/weight:${values[i + 4]}/g")
+        block=$(echo $block | sed "s/status:[^,]*/status:\"${values[i + 5]}\"/g")
+        block=$(echo $block | sed "s/compression:[^}]*/compression:${values[i + 6]}/g")
+        MYSQL_SERVERS_BLOCK+=$block"\n"
+      fi
+      values=()
+    done
+    IFS=$OIFS
 
-done
+  done
 
-MYSQL_SERVERS_TEMPLATE=$(echo $MYSQL_SERVERS_TEMPLATE | sed "s/MYSQL_SERVERS_TEMPLATE_BLOCK/$MYSQL_SERVERS_BLOCK /g")
-echo $MYSQL_SERVERS_TEMPLATE >> /etc/proxysql.cnf
+  MYSQL_SERVERS_TEMPLATE=$(echo $MYSQL_SERVERS_TEMPLATE | sed "s/MYSQL_SERVERS_TEMPLATE_BLOCK/$MYSQL_SERVERS_BLOCK /g")
+  echo $MYSQL_SERVERS_TEMPLATE >>/etc/proxysql.cnf
 fi
 
 if [ -n "$MYSQL_QUERY_RULES" ]; then
-MYSQL_QUERY_RULES_TEMPLATE="mysql_query_rules:
+  MYSQL_QUERY_RULES_TEMPLATE="mysql_query_rules:
 (
 MYSQL_QUERY_RULES_TEMPLATE_BLOCK
 )
 "
-MYSQL_QUERY_RULES_TEMPLATE_BLOCK="{ rule_id:1, match_pattern:\" \", destination_hostgroup:0, apply:1, active:1 },"
-MYSQL_QUERY_RULES_BLOCK=""
-key_values=()
-values=()
-OIFS=$IFS
-IFS=','
-key_values+=($MYSQL_QUERY_RULES)
-j=1
-for x in ${key_values[@]};
-do
-IFS=';'
-values+=($x)
+  MYSQL_QUERY_RULES_TEMPLATE_BLOCK="{ rule_id:1, match_pattern:\" \", destination_hostgroup:0, apply:1, active:1 },"
+  MYSQL_QUERY_RULES_BLOCK=""
+  key_values=()
+  values=()
+  OIFS=$IFS
+  IFS=','
+  key_values+=($MYSQL_QUERY_RULES)
+  j=1
+  for x in ${key_values[@]}; do
+    IFS=';'
+    values+=($x)
 
-for ((i = 0 ; i < ${#values[@]} ; i++ )); do 
-if [ ${#values[@]} == 2 ]; then
-block=$MYSQL_QUERY_RULES_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/rule_id:[^,]*/rule_id:$j/g")
-block=$(echo $block | sed "s/match_pattern:[^,]*/match_pattern:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/destination_hostgroup:[^,]*/destination_hostgroup:${values[i+1]}/g")
-MYSQL_QUERY_RULES_BLOCK+=$block"\n"
-elif [ ${#values[@]} == 3 ]; then
-block=$MYSQL_QUERY_RULES_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/rule_id:[^,]*/rule_id:$j/g")
-block=$(echo $block | sed "s/match_pattern:[^,]*/match_pattern:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/destination_hostgroup:[^,]*/destination_hostgroup:${values[i+1]}/g")
-block=$(echo $block | sed "s/apply:[^,]*/apply:${values[i+2]}/g")
-MYSQL_QUERY_RULES_BLOCK+=$block"\n"
-elif [ ${#values[@]} == 4 ]; then
-block=$MYSQL_QUERY_RULES_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/rule_id:[^,]*/rule_id:$j/g")
-block=$(echo $block | sed "s/match_pattern:[^,]*/match_pattern:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/destination_hostgroup:[^,]*/destination_hostgroup:${values[i+1]}/g")
-block=$(echo $block | sed "s/apply:[^,]*/apply:${values[i+2]}/g")
-block=$(echo $block | sed "s/active:[^}]*/active:${values[i+3]}/g")
-MYSQL_QUERY_RULES_BLOCK+=$block"\n"
+    for ((i = 0; i < ${#values[@]}; i++)); do
+      if [ ${#values[@]} == 2 ]; then
+        block=$MYSQL_QUERY_RULES_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/rule_id:[^,]*/rule_id:$j/g")
+        block=$(echo $block | sed "s/match_pattern:[^,]*/match_pattern:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/destination_hostgroup:[^,]*/destination_hostgroup:${values[i + 1]}/g")
+        MYSQL_QUERY_RULES_BLOCK+=$block"\n"
+      elif [ ${#values[@]} == 3 ]; then
+        block=$MYSQL_QUERY_RULES_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/rule_id:[^,]*/rule_id:$j/g")
+        block=$(echo $block | sed "s/match_pattern:[^,]*/match_pattern:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/destination_hostgroup:[^,]*/destination_hostgroup:${values[i + 1]}/g")
+        block=$(echo $block | sed "s/apply:[^,]*/apply:${values[i + 2]}/g")
+        MYSQL_QUERY_RULES_BLOCK+=$block"\n"
+      elif [ ${#values[@]} == 4 ]; then
+        block=$MYSQL_QUERY_RULES_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/rule_id:[^,]*/rule_id:$j/g")
+        block=$(echo $block | sed "s/match_pattern:[^,]*/match_pattern:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/destination_hostgroup:[^,]*/destination_hostgroup:${values[i + 1]}/g")
+        block=$(echo $block | sed "s/apply:[^,]*/apply:${values[i + 2]}/g")
+        block=$(echo $block | sed "s/active:[^}]*/active:${values[i + 3]}/g")
+        MYSQL_QUERY_RULES_BLOCK+=$block"\n"
+      fi
+      echo $j
+      j=$(expr $j + 1)
+      echo $j
+      values=()
+    done
+  done
+  IFS=$OIFS
+  MYSQL_QUERY_RULES_TEMPLATE=$(echo $MYSQL_QUERY_RULES_TEMPLATE | sed "s/MYSQL_QUERY_RULES_TEMPLATE_BLOCK/$MYSQL_QUERY_RULES_BLOCK /g")
+  echo $MYSQL_QUERY_RULES_TEMPLATE >>/etc/proxysql.cnf
 fi
-echo $j
-j=$(expr $j + 1)
-echo $j
-values=()
-done
-done
-IFS=$OIFS
-MYSQL_QUERY_RULES_TEMPLATE=$(echo $MYSQL_QUERY_RULES_TEMPLATE | sed "s/MYSQL_QUERY_RULES_TEMPLATE_BLOCK/$MYSQL_QUERY_RULES_BLOCK /g")
-echo $MYSQL_QUERY_RULES_TEMPLATE >> /etc/proxysql.cnf
-fi
-
 
 if [ -n "$MYSQL_USERS" ]; then
-MYSQL_USERS_TEMPLATE="mysql_users:
+  MYSQL_USERS_TEMPLATE="mysql_users:
 (
 MYSQL_USERS_TEMPLATE_BLOCK
 )
 "
-MYSQL_USERS_TEMPLATE_BLOCK="{ username:\"root\", password:\"\", default_hostgroup:1, active:1 },"
-MYSQL_USERS_BLOCK=""
-key_values=()
-values=()
-OIFS=$IFS
-IFS=','
-key_values+=($MYSQL_USERS)
-for x in ${key_values[@]};
-do
-IFS=';'
-values+=($x)
-for ((i = 0 ; i < ${#values[@]} ; i++ )); do 
-if [ ${#values[@]} == 1 ]; then
-block=$MYSQL_USERS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/username:[^,]*/username:\"${values[i]}\"/g")
-MYSQL_USERS_BLOCK+=$block"\n"
-elif [ ${#values[@]} == 2 ]; then
-block=$MYSQL_USERS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/username:[^,]*/username:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/password:[^,]*/password:\"${values[i+1]}\"/g")
-MYSQL_USERS_BLOCK+=$block"\n"
-elif [ ${#values[@]} == 3 ]; then
-block=$MYSQL_USERS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/username:[^,]*/username:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/password:[^,]*/password:\"${values[i+1]}\"/g")
-block=$(echo $block | sed "s/default_hostgroup:[^,]*/default_hostgroup:${values[i+2]}/g")
-MYSQL_USERS_BLOCK+=$block"\n"
-elif [ ${#values[@]} == 4 ]; then
-block=$MYSQL_USERS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/username:[^,]*/username:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/password:[^,]*/password:\"${values[i+1]}\"/g")
-block=$(echo $block | sed "s/default_hostgroup:[^,]*/default_hostgroup:${values[i+2]}/g")
-block=$(echo $block | sed "s/active:[^}]*/active:${values[i+3]}/g")
-MYSQL_USERS_BLOCK+=$block"\n"
+  MYSQL_USERS_TEMPLATE_BLOCK="{ username:\"root\", password:\"\", default_hostgroup:1, active:1 },"
+  MYSQL_USERS_BLOCK=""
+  key_values=()
+  values=()
+  OIFS=$IFS
+  MYSQL_USERS=$(echo "$MYSQL_USERS" | sed 's/\\,/[[COMMA]]/g;s/\\;/[[SEMI]]/g')
+  IFS=','
+  key_values+=($MYSQL_USERS)
+  for x in ${key_values[@]}; do
+    IFS=';'
+    values+=($x)
+    IFS=$OIFS
+    for ((i = 0; i < ${#values[@]}; i++)); do
+      if [ ${#values[@]} == 1 ]; then
+        block=$MYSQL_USERS_TEMPLATE_BLOCK
+        values[i]=$(echo "${values[i]}" | sed 's/\[\[COMMA\]\]/,/g;s/\[\[SEMI\]\]/;/g')
+        block=$(echo $block | sed "s/username:[^,]*/username:\"${values[i]}\"/g")
+        MYSQL_USERS_BLOCK+=$block"\n"
+      elif [ ${#values[@]} == 2 ]; then
+        block=$MYSQL_USERS_TEMPLATE_BLOCK
+        values[i]=$(echo "${values[i]}" | sed 's/\[\[COMMA\]\]/,/g;s/\[\[SEMI\]\]/;/g')
+        values[i + 1]=$(echo "${values[i + 1]}" | sed 's/\[\[COMMA\]\]/,/g;s/\[\[SEMI\]\]/;/g')
+        block=$(echo $block | sed "s/username:[^,]*/username:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/password:[^,]*/password:\"${values[i + 1]}\"/g")
+        MYSQL_USERS_BLOCK+=$block"\n"
+      elif [ ${#values[@]} == 3 ]; then
+        block=$MYSQL_USERS_TEMPLATE_BLOCK
+        values[i]=$(echo "${values[i]}" | sed 's/\[\[COMMA\]\]/,/g;s/\[\[SEMI\]\]/;/g')
+        values[i + 1]=$(echo "${values[i + 1]}" | sed 's/\[\[COMMA\]\]/,/g;s/\[\[SEMI\]\]/;/g')
+        values[i + 2]=$(echo "${values[i + 2]}" | sed 's/\[\[COMMA\]\]/,/g;s/\[\[SEMI\]\]/;/g')
+        block=$(echo $block | sed "s/username:[^,]*/username:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/password:[^,]*/password:\"${values[i + 1]}\"/g")
+        block=$(echo $block | sed "s/default_hostgroup:[^,]*/default_hostgroup:${values[i + 2]}/g")
+        MYSQL_USERS_BLOCK+=$block"\n"
+      elif [ ${#values[@]} == 4 ]; then
+        block=$MYSQL_USERS_TEMPLATE_BLOCK
+        values[i]=$(echo "${values[i]}" | sed 's/\[\[COMMA\]\]/,/g;s/\[\[SEMI\]\]/;/g')
+        values[i + 1]=$(echo "${values[i + 1]}" | sed 's/\[\[COMMA\]\]/,/g;s/\[\[SEMI\]\]/;/g')
+        values[i + 2]=$(echo "${values[i + 2]}" | sed 's/\[\[COMMA\]\]/,/g;s/\[\[SEMI\]\]/;/g')
+        values[i + 3]=$(echo "${values[i + 3]}" | sed 's/\[\[COMMA\]\]/,/g;s/\[\[SEMI\]\]/;/g')
+        echo $values[@]
+        block=$(echo $block | sed "s/username:[^,]*/username:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/password:[^,]*/password:\"${values[i + 1]}\"/g")
+        block=$(echo $block | sed "s/default_hostgroup:[^,]*/default_hostgroup:${values[i + 2]}/g")
+        block=$(echo $block | sed "s/active:[^}]*/active:${values[i + 3]}/g")
+        MYSQL_USERS_BLOCK+=$block"\n"
+      fi
+      values=()
+    done
+  done
+  IFS=$OIFS
+  MYSQL_USERS_TEMPLATE=$(echo $MYSQL_USERS_TEMPLATE | sed "s/MYSQL_USERS_TEMPLATE_BLOCK/$MYSQL_USERS_BLOCK /g")
+  echo $MYSQL_USERS_TEMPLATE >>/etc/proxysql.cnf
 fi
-values=()
-done
-done
-IFS=$OIFS
-MYSQL_USERS_TEMPLATE=$(echo $MYSQL_USERS_TEMPLATE | sed "s/MYSQL_USERS_TEMPLATE_BLOCK/$MYSQL_USERS_BLOCK /g")
-echo $MYSQL_USERS_TEMPLATE >> /etc/proxysql.cnf
-fi
-
 
 if [ -n "$MYSQL_GALERA_HOSTGROUPS" ]; then
-MYSQL_GALERA_HOSTGROUPS_TEMPLATE="mysql_galera_hostgroups:
+  MYSQL_GALERA_HOSTGROUPS_TEMPLATE="mysql_galera_hostgroups:
 (
 MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
 )
 "
-MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK="{  comment:\"comment\", writer_hostgroup:1, backup_writer_hostgroup:2, reader_hostgroup:3,	offline_hostgroup:4, active:1, max_writers:23, writer_is_also_reader:1, max_transactions_behind:1},"
-MYSQL_GALERA_HOSTGROUPS_BLOCK=""
-key_values=()
-values=()
-OIFS=$IFS
-IFS=','
-key_values+=($MYSQL_GALERA_HOSTGROUPS)
-for x in ${key_values[@]};
-do
-IFS=';'
-values+=($x)
-for ((i = 0 ; i < ${#values[@]} ; i++ )); do 
-if [ ${#values[@]} == 1 ]; then
-block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
-MYSQL_GALERA_HOSTGROUPS_BLOCK+=$block"\n"
-elif [ ${#values[@]} == 2 ]; then
-block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i+1]}/g")
-MYSQL_GALERA_HOSTGROUPS_BLOCK+=$block"\n"
-elif [ ${#values[@]} == 3 ]; then
-block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i+1]}/g")
-block=$(echo $block | sed "s/backup_writer_hostgroup:[^,]*/backup_writer_hostgroup:${values[i+2]}/g")
-MYSQL_GALERA_HOSTGROUPS_BLOCK+=$block"\n"
-elif [ ${#values[@]} == 4 ]; then
-block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i+1]}/g")
-block=$(echo $block | sed "s/backup_writer_hostgroup:[^,]*/backup_writer_hostgroup:${values[i+2]}/g")
-block=$(echo $block | sed "s/reader_hostgroup:[^,]*/reader_hostgroup:${values[i+3]}/g")
-elif [ ${#values[@]} == 5 ]; then
-block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i+1]}/g")
-block=$(echo $block | sed "s/backup_writer_hostgroup:[^,]*/backup_writer_hostgroup:${values[i+2]}/g")
-block=$(echo $block | sed "s/reader_hostgroup:[^,]*/reader_hostgroup:${values[i+3]}/g")
-block=$(echo $block | sed "s/offline_hostgroup:[^,]*/offline_hostgroup:${values[i+4]}/g")
-elif [ ${#values[@]} == 6 ]; then
-block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i+1]}/g")
-block=$(echo $block | sed "s/backup_writer_hostgroup:[^,]*/backup_writer_hostgroup:${values[i+2]}/g")
-block=$(echo $block | sed "s/reader_hostgroup:[^,]*/reader_hostgroup:${values[i+3]}/g")
-block=$(echo $block | sed "s/offline_hostgroup:[^,]*/offline_hostgroup:${values[i+4]}/g")
-block=$(echo $block | sed "s/active:[^,]*/active:${values[i+5]}/g")
-elif [ ${#values[@]} == 7 ]; then
-block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i+1]}/g")
-block=$(echo $block | sed "s/backup_writer_hostgroup:[^,]*/backup_writer_hostgroup:${values[i+2]}/g")
-block=$(echo $block | sed "s/reader_hostgroup:[^,]*/reader_hostgroup:${values[i+3]}/g")
-block=$(echo $block | sed "s/offline_hostgroup:[^,]*/offline_hostgroup:${values[i+4]}/g")
-block=$(echo $block | sed "s/active:[^,]*/active:${values[i+5]}/g")
-block=$(echo $block | sed "s/max_writers:[^,]*/max_writers:${values[i+6]}/g")
-elif [ ${#values[@]} == 8 ]; then
-block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i+1]}/g")
-block=$(echo $block | sed "s/backup_writer_hostgroup:[^,]*/backup_writer_hostgroup:${values[i+2]}/g")
-block=$(echo $block | sed "s/reader_hostgroup:[^,]*/reader_hostgroup:${values[i+3]}/g")
-block=$(echo $block | sed "s/offline_hostgroup:[^,]*/offline_hostgroup:${values[i+4]}/g")
-block=$(echo $block | sed "s/active:[^,]*/active:${values[i+5]}/g")
-block=$(echo $block | sed "s/max_writers:[^,]*/max_writers:${values[i+6]}/g")
-block=$(echo $block | sed "s/writer_is_also_reader:[^,]*/writer_is_also_reader:${values[i+7]}/g")
-MYSQL_GALERA_HOSTGROUPS_BLOCK+=$block"\n"
-elif [ ${#values[@]} == 9 ]; then
-block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
-block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
-block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i+1]}/g")
-block=$(echo $block | sed "s/backup_writer_hostgroup:[^,]*/backup_writer_hostgroup:${values[i+2]}/g")
-block=$(echo $block | sed "s/reader_hostgroup:[^,]*/reader_hostgroup:${values[i+3]}/g")
-block=$(echo $block | sed "s/offline_hostgroup:[^,]*/offline_hostgroup:${values[i+4]}/g")
-block=$(echo $block | sed "s/active:[^,]*/active:${values[i+5]}/g")
-block=$(echo $block | sed "s/max_writers:[^,]*/max_writers:${values[i+6]}/g")
-block=$(echo $block | sed "s/writer_is_also_reader:[^,]*/writer_is_also_reader:${values[i+7]}/g")
-block=$(echo $block | sed "s/max_transactions_behind:[^}]*/max_transactions_behind:${values[i+8]}/g")
-MYSQL_GALERA_HOSTGROUPS_BLOCK+=$block"\n"
-fi
-values=()
-done
-done
-IFS=$OIFS
-MYSQL_GALERA_HOSTGROUPS_TEMPLATE=$(echo $MYSQL_GALERA_HOSTGROUPS_TEMPLATE | sed "s/MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK/$MYSQL_GALERA_HOSTGROUPS_BLOCK /g")
-echo $MYSQL_GALERA_HOSTGROUPS_TEMPLATE >> /etc/proxysql.cnf
+  MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK="{  comment:\"comment\", writer_hostgroup:1, backup_writer_hostgroup:2, reader_hostgroup:3,	offline_hostgroup:4, active:1, max_writers:23, writer_is_also_reader:1, max_transactions_behind:1},"
+  MYSQL_GALERA_HOSTGROUPS_BLOCK=""
+  key_values=()
+  values=()
+  OIFS=$IFS
+  IFS=','
+  key_values+=($MYSQL_GALERA_HOSTGROUPS)
+  for x in ${key_values[@]}; do
+    IFS=';'
+    values+=($x)
+    for ((i = 0; i < ${#values[@]}; i++)); do
+      if [ ${#values[@]} == 1 ]; then
+        block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
+        MYSQL_GALERA_HOSTGROUPS_BLOCK+=$block"\n"
+      elif [ ${#values[@]} == 2 ]; then
+        block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i + 1]}/g")
+        MYSQL_GALERA_HOSTGROUPS_BLOCK+=$block"\n"
+      elif [ ${#values[@]} == 3 ]; then
+        block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i + 1]}/g")
+        block=$(echo $block | sed "s/backup_writer_hostgroup:[^,]*/backup_writer_hostgroup:${values[i + 2]}/g")
+        MYSQL_GALERA_HOSTGROUPS_BLOCK+=$block"\n"
+      elif [ ${#values[@]} == 4 ]; then
+        block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i + 1]}/g")
+        block=$(echo $block | sed "s/backup_writer_hostgroup:[^,]*/backup_writer_hostgroup:${values[i + 2]}/g")
+        block=$(echo $block | sed "s/reader_hostgroup:[^,]*/reader_hostgroup:${values[i + 3]}/g")
+      elif [ ${#values[@]} == 5 ]; then
+        block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i + 1]}/g")
+        block=$(echo $block | sed "s/backup_writer_hostgroup:[^,]*/backup_writer_hostgroup:${values[i + 2]}/g")
+        block=$(echo $block | sed "s/reader_hostgroup:[^,]*/reader_hostgroup:${values[i + 3]}/g")
+        block=$(echo $block | sed "s/offline_hostgroup:[^,]*/offline_hostgroup:${values[i + 4]}/g")
+      elif [ ${#values[@]} == 6 ]; then
+        block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i + 1]}/g")
+        block=$(echo $block | sed "s/backup_writer_hostgroup:[^,]*/backup_writer_hostgroup:${values[i + 2]}/g")
+        block=$(echo $block | sed "s/reader_hostgroup:[^,]*/reader_hostgroup:${values[i + 3]}/g")
+        block=$(echo $block | sed "s/offline_hostgroup:[^,]*/offline_hostgroup:${values[i + 4]}/g")
+        block=$(echo $block | sed "s/active:[^,]*/active:${values[i + 5]}/g")
+      elif [ ${#values[@]} == 7 ]; then
+        block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i + 1]}/g")
+        block=$(echo $block | sed "s/backup_writer_hostgroup:[^,]*/backup_writer_hostgroup:${values[i + 2]}/g")
+        block=$(echo $block | sed "s/reader_hostgroup:[^,]*/reader_hostgroup:${values[i + 3]}/g")
+        block=$(echo $block | sed "s/offline_hostgroup:[^,]*/offline_hostgroup:${values[i + 4]}/g")
+        block=$(echo $block | sed "s/active:[^,]*/active:${values[i + 5]}/g")
+        block=$(echo $block | sed "s/max_writers:[^,]*/max_writers:${values[i + 6]}/g")
+      elif [ ${#values[@]} == 8 ]; then
+        block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i + 1]}/g")
+        block=$(echo $block | sed "s/backup_writer_hostgroup:[^,]*/backup_writer_hostgroup:${values[i + 2]}/g")
+        block=$(echo $block | sed "s/reader_hostgroup:[^,]*/reader_hostgroup:${values[i + 3]}/g")
+        block=$(echo $block | sed "s/offline_hostgroup:[^,]*/offline_hostgroup:${values[i + 4]}/g")
+        block=$(echo $block | sed "s/active:[^,]*/active:${values[i + 5]}/g")
+        block=$(echo $block | sed "s/max_writers:[^,]*/max_writers:${values[i + 6]}/g")
+        block=$(echo $block | sed "s/writer_is_also_reader:[^,]*/writer_is_also_reader:${values[i + 7]}/g")
+        MYSQL_GALERA_HOSTGROUPS_BLOCK+=$block"\n"
+      elif [ ${#values[@]} == 9 ]; then
+        block=$MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK
+        block=$(echo $block | sed "s/comment:[^,]*/comment:\"${values[i]}\"/g")
+        block=$(echo $block | sed "s/writer_hostgroup:[^,]*/writer_hostgroup:${values[i + 1]}/g")
+        block=$(echo $block | sed "s/backup_writer_hostgroup:[^,]*/backup_writer_hostgroup:${values[i + 2]}/g")
+        block=$(echo $block | sed "s/reader_hostgroup:[^,]*/reader_hostgroup:${values[i + 3]}/g")
+        block=$(echo $block | sed "s/offline_hostgroup:[^,]*/offline_hostgroup:${values[i + 4]}/g")
+        block=$(echo $block | sed "s/active:[^,]*/active:${values[i + 5]}/g")
+        block=$(echo $block | sed "s/max_writers:[^,]*/max_writers:${values[i + 6]}/g")
+        block=$(echo $block | sed "s/writer_is_also_reader:[^,]*/writer_is_also_reader:${values[i + 7]}/g")
+        block=$(echo $block | sed "s/max_transactions_behind:[^}]*/max_transactions_behind:${values[i + 8]}/g")
+        MYSQL_GALERA_HOSTGROUPS_BLOCK+=$block"\n"
+      fi
+      values=()
+    done
+  done
+  IFS=$OIFS
+  MYSQL_GALERA_HOSTGROUPS_TEMPLATE=$(echo $MYSQL_GALERA_HOSTGROUPS_TEMPLATE | sed "s/MYSQL_GALERA_HOSTGROUPS_TEMPLATE_BLOCK/$MYSQL_GALERA_HOSTGROUPS_BLOCK /g")
+  echo $MYSQL_GALERA_HOSTGROUPS_TEMPLATE >>/etc/proxysql.cnf
 fi
